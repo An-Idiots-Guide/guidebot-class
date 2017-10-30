@@ -30,7 +30,7 @@ class Set extends Command {
   async run(message, [action, key, ...value], level) { // eslint-disable-line no-unused-vars
 
     // Retrieve current guild settings
-    const settings = this.client.settings.get(message.guild.id);
+    const settings = await this.client.settings.get(message.guild.id).getField("settings").run();
   
     // First, if a user does `-set add <key> <new value>`, let's add it
     if (action === "add") {
@@ -42,7 +42,7 @@ class Set extends Command {
       settings[key] = value.join(" ");
   
       // One the settings is modified, we write it back to the collection
-      this.client.settings.set(message.guild.id, settings);
+      await this.client.settings.update({"settings":settings}).run();
       message.reply(`${key} successfully added with the value of ${value.join(" ")}`);
     } else
   
@@ -54,7 +54,7 @@ class Set extends Command {
     
       settings[key] = value.join(" ");
 
-      this.client.settings.set(message.guild.id, settings);
+      await this.client.settings.update({"settings":settings}).run();
       message.reply(`${key} successfully edited to ${value.join(" ")}`);
     } else
   
@@ -71,7 +71,7 @@ class Set extends Command {
 
         // We delete the `key` here.
         delete settings[key];
-        this.client.settings.set(message.guild.id, settings);
+        await this.client.settings.update({"settings":settings}).run();
         message.reply(`${key} was successfully deleted.`);
       } else
       // If they respond with n or no, we inform them that the action has been cancelled.
