@@ -42,7 +42,7 @@ class Set extends Command {
       settings[key] = value.join(" ");
   
       // One the settings is modified, we write it back to the collection
-      await this.client.settings.update({"settings":settings}).run();
+      await this.client.settings.get(message.guild.id).update({"settings":settings}).run();
       message.reply(`${key} successfully added with the value of ${value.join(" ")}`);
     } else
   
@@ -54,7 +54,7 @@ class Set extends Command {
     
       settings[key] = value.join(" ");
 
-      await this.client.settings.update({"settings":settings}).run();
+      await this.client.settings.get(message.guild.id).update({"settings":settings}).run();
       message.reply(`${key} successfully edited to ${value.join(" ")}`);
     } else
   
@@ -71,7 +71,7 @@ class Set extends Command {
 
         // We delete the `key` here.
         delete settings[key];
-        await this.client.settings.update({"settings":settings}).run();
+        await this.client.settings.get(message.guild.id).update({"settings":settings}).run();
         message.reply(`${key} was successfully deleted.`);
       } else
       // If they respond with n or no, we inform them that the action has been cancelled.
