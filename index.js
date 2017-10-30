@@ -10,7 +10,7 @@ const { promisify } = require("util");
 const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
 const EnmapLevel = require("enmap-level");
-const r = require("rethinkdbdash")();
+const r = require("rethinkdbdash")({ db: "guidebot" });
 
 class GuideBot extends Discord.Client {
   constructor(options) {
@@ -26,10 +26,10 @@ class GuideBot extends Discord.Client {
     this.commands = new Enmap();
     this.aliases = new Enmap();
 
-    // Now we integrate the use of Evie's awesome Enhanced Map module, which
-    // essentially saves a collection to disk. This is great for per-server configs,
-    // and makes things extremely easy for this purpose.
-    this.settings = new Enmap({provider: new EnmapLevel({name: "settings"})});
+    // Set client.settings to select the table. You must have the database "guidebot" AND the table "settings" pre-built.
+    
+    
+    this.settings = r.table("settings")
   }
 
   /*
