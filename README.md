@@ -16,6 +16,7 @@ and 99% compatible with commands from [York's Tutorial Bot](https://github.com/A
 
 - `git` command line ([Windows](https://git-scm.com/download/win)|[Linux](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)|[MacOS](https://git-scm.com/download/mac)) installed
 - `node` [Version 8.0.0 or higher](https://nodejs.org)
+- `rethinkdb` [Version 2.3.6 or higher](https://www.rethinkdb.com/)
 
 You also need your bot's token. This is obtained by creating an application in
 the Developer section of discordapp.com. Check the [first section of this page](https://anidiots.guide/getting-started/the-long-version.html)
@@ -49,6 +50,28 @@ Once finished:
 }
 ```
 > The token in the above example belongs to a deleted bot.
+
+## Setting up the Database
+
+Once you've installed RethinkDB for your Operating System you will need to create the Database **guidebot** and Table **settings**
+
+> If you have access to the Administration Console [Accessible by going to **127.0.0.1:8080**] continue by following these steps:
+
+- Go to the **Tables** tab
+- Click **+ Add Database**
+- Set the name as **guidebot**
+- In the database, click **+ Add Table**
+- Set the name as **settings**
+
+> If you do not have access to the Administration Console, use the following code in a Node console to add the tables.
+
+```
+r = require("rethinkdbdash")()
+
+r.dbCreate("guidebot").tableCreate("settings").run()
+```
+
+Once the following steps are complete, the bot will function as normal.
 
 ## Starting the bot
 
