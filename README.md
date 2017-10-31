@@ -70,7 +70,7 @@ r = require("rethinkdbdash")()
 
 r.dbCreate("guidebot").run()
 
-r.tableCreate("settings").run()
+r.db("guidebot").tableCreate("settings").run()
 ```
 
 Once the following steps are complete, the bot will function as normal.
