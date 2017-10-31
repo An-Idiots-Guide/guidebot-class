@@ -68,7 +68,9 @@ Once you've installed RethinkDB for your Operating System you will need to creat
 ```
 r = require("rethinkdbdash")()
 
-r.dbCreate("guidebot").tableCreate("settings").run()
+r.dbCreate("guidebot").run()
+
+r.tableCreate("settings").run()
 ```
 
 Once the following steps are complete, the bot will function as normal.
