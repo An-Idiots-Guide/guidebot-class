@@ -14,6 +14,8 @@ module.exports = class {
     this.client.log("log", `${this.client.user.tag}, ready to serve ${this.client.users.size} users in ${this.client.guilds.size} servers.`, "Ready!");
 
     // We check for any guilds added while the bot was offline, if any were, they get a default configuration.
-    this.client.guilds.filter(g => !this.client.settings.has(g.id)).forEach(g => this.client.settings.set(g.id, this.client.config.defaultSettings));
+    let glds = await this.client.settings.run()
+    let gld = await this.client.clean(this.client,glds[0])
+    this.client.guilds.filter(g => gld.includes(g.id) ? console.log("Bot ready to rock.") : this.client.settings.insert({id: g.id, settings: this.client.config.defaultSettings}).run())
   }
 };

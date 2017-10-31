@@ -10,10 +10,11 @@ const { promisify } = require("util");
 const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
 const EnmapLevel = require("enmap-level");
+const r = require("rethinkdbdash")({ db: "guidebot" });
 
 class GuideBot extends Discord.Client {
   constructor(options) {
-    super(options);
+      super(options);
 
     // Here we load the config.js file that contains our token and our prefix values.
     this.config = require("./config.js");
@@ -25,20 +26,18 @@ class GuideBot extends Discord.Client {
     this.commands = new Enmap();
     this.aliases = new Enmap();
 
-    // Now we integrate the use of Evie's awesome Enhanced Map module, which
-    // essentially saves a collection to disk. This is great for per-server configs,
-    // and makes things extremely easy for this purpose.
-    this.settings = new Enmap({provider: new EnmapLevel({name: "settings"})});
+    // Set client.settings to select the table. You must have the database "guidebot" AND the table "settings" pre-built.
+    this.settings = r.table("settings")
   }
 
   /*
   PERMISSION LEVEL FUNCTION
-
+  
   This is a very basic permission system for commands which uses "levels"
   "spaces" are intentionally left black so you can add them if you want.
   NEVER GIVE ANYONE BUT OWNER THE LEVEL 10! By default this can run any
   command including the VERY DANGEROUS `eval` command!
-
+  
   */
   permlevel(message) {
     let permlvl = 0;
@@ -58,7 +57,7 @@ class GuideBot extends Discord.Client {
 
   /*
   LOGGING FUNCTION
-
+  
   Logs to console. Future patches may include time+colors
   */
   log(type, msg, title) {
@@ -121,8 +120,8 @@ const init = async () => {
   client.log("log", `Loading a total of ${cmdFiles.length} commands.`);
   cmdFiles.forEach(f => {
     if (!f.endsWith(".js")) return;
-    const response = client.loadCommand(f);
-    if (response) console.log(response);
+     const response = client.loadCommand(f);
+     if (response) console.log(response);
   });
 
   // Then we load events, which will include our message and ready event.

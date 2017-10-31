@@ -8,6 +8,6 @@ module.exports = class {
   async run(guild) {
 
     // Well they're gone. Let's remove them from the settings!
-    this.client.settings.delete(guild.id);
+    this.client.settings.get(guild.id).delete().run();
   }
 };

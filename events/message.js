@@ -16,7 +16,7 @@ module.exports = class {
     // Grab the settings for this server from the PersistentCollection
     // If there is no guild, get default conf (DMs)
     const settings = message.guild ?
-      this.client.settings.get(message.guild.id) :
+      await this.client.settings.get(message.guild.id).getField("settings").run() :
       this.client.config.defaultSettings;
 
     // For ease of use in commands and functions, we'll attach the settings
@@ -59,12 +59,12 @@ This command requires level ${this.client.levelCache[cmd.conf.permLevel]} (${cmd
       }
     }
       
-    // To simplify message arguments, the author's level is now put on level (not member, so it is supported in DMs)
-    // The "level" command module argument will be deprecated in the future.
-    message.author.permLevel = level;
+     // To simplify message arguments, the author's level is now put on level (not member, so it is supported in DMs)
+     // The "level" command module argument will be deprecated in the future.
+     message.author.permLevel = level;
 
-    message.flags = [];
-    while (args[0] &&args[0][0] === "-") {
+     message.flags = [];
+     while (args[0] &&args[0][0] === "-") {
       message.flags.push(args.shift().slice(1));
     }
     
