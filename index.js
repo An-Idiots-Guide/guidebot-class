@@ -9,12 +9,11 @@ const Discord = require("discord.js");
 const { promisify } = require("util");
 const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
-const EnmapLevel = require("enmap-level");
 const r = require("rethinkdbdash")({ db: "guidebot" });
 
 class GuideBot extends Discord.Client {
   constructor(options) {
-      super(options);
+    super(options);
 
     // Here we load the config.js file that contains our token and our prefix values.
     this.config = require("./config.js");
@@ -27,18 +26,20 @@ class GuideBot extends Discord.Client {
     this.aliases = new Enmap();
 
     // Set client.settings to select the table. You must have the database "guidebot" AND the table "settings" pre-built.
+    
+    
     this.settings = r.table("settings")
   }
 
   /*
-  PERMISSION LEVEL FUNCTION
+    PERMISSION LEVEL FUNCTION
   
-  This is a very basic permission system for commands which uses "levels"
-  "spaces" are intentionally left black so you can add them if you want.
-  NEVER GIVE ANYONE BUT OWNER THE LEVEL 10! By default this can run any
-  command including the VERY DANGEROUS `eval` command!
+    This is a very basic permission system for commands which uses "levels"
+    "spaces" are intentionally left black so you can add them if you want.
+    NEVER GIVE ANYONE BUT OWNER THE LEVEL 10! By default this can run any
+    command including the VERY DANGEROUS `eval` command!
   
-  */
+    */
   permlevel(message) {
     let permlvl = 0;
 
@@ -56,10 +57,10 @@ class GuideBot extends Discord.Client {
   }
 
   /*
-  LOGGING FUNCTION
+    LOGGING FUNCTION
   
-  Logs to console. Future patches may include time+colors
-  */
+    Logs to console. Future patches may include time+colors
+    */
   log(type, msg, title) {
     if (!title) title = "Log";
     console.log(`[${type}] [${title}]${msg}`);
@@ -120,8 +121,8 @@ const init = async () => {
   client.log("log", `Loading a total of ${cmdFiles.length} commands.`);
   cmdFiles.forEach(f => {
     if (!f.endsWith(".js")) return;
-     const response = client.loadCommand(f);
-     if (response) console.log(response);
+    const response = client.loadCommand(f);
+    if (response) console.log(response);
   });
 
   // Then we load events, which will include our message and ready event.
@@ -144,7 +145,7 @@ const init = async () => {
   // Here we login the client.
   client.login(client.config.token);
 
-// End top-level async/await function.
+  // End top-level async/await function.
 };
 
 init();
