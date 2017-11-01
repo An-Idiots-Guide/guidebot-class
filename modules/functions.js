@@ -1,17 +1,17 @@
 module.exports = (client) => {
 
   /*
-  SINGLE-LINE AWAITMESSAGE
-
-  A simple way to grab a single reply, from the user that initiated
-  the command. Useful to get "precisions" on certain things...
-
-  USAGE
-
-  const response = await client.awaitReply(msg, "Favourite Color?");
-  msg.reply(`Oh, I really love ${response} too!`);
-
-  */
+    SINGLE-LINE AWAITMESSAGE
+  
+    A simple way to grab a single reply, from the user that initiated
+    the command. Useful to get "precisions" on certain things...
+  
+    USAGE
+  
+    const response = await client.awaitReply(msg, "Favourite Color?");
+    msg.reply(`Oh, I really love ${response} too!`);
+  
+    */
   client.awaitReply = async (msg, question, limit = 60000) => {
     const filter = m=>m.author.id = msg.author.id;
     await msg.channel.send(question);
@@ -25,13 +25,13 @@ module.exports = (client) => {
 
 
   /*
-  MESSAGE CLEAN FUNCTION
-
-  "Clean" removes @everyone pings, as well as tokens, and makes code blocks
-  escaped so they're shown more easily. As a bonus it resolves promises
-  and stringifies objects!
-  This is mostly only used by the Eval and Exec commands.
-  */
+    MESSAGE CLEAN FUNCTION
+  
+    "Clean" removes @everyone pings, as well as tokens, and makes code blocks
+    escaped so they're shown more easily. As a bonus it resolves promises
+    and stringifies objects!
+    This is mostly only used by the Eval and Exec commands.
+    */
   client.clean = async (client, text) => {
     if (text && text.constructor.name == "Promise")
       text = await text;
