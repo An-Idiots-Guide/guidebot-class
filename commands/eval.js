@@ -13,7 +13,7 @@ class Eval extends Command {
     super(client, {
       name: "eval",
       description: "Evaluates arbitrary Javascript.",
-      category:"System",
+      category: "System",
       usage: "eval <expression>",
       aliases: ["ev"],
       permLevel: "Bot Owner"
