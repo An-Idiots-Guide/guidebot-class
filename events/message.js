@@ -15,7 +15,7 @@ module.exports = class {
 
     // Grab the settings for this server from the PersistentCollection
     // If there is no guild, get default conf (DMs)
-    const settings = message.guild ? this.client.getSettings(message.guild.id) : await this.client.settings.get("default").run();
+    const settings = message.guild ? await this.client.settings.get(message.guild.id).getField("settings").run() : await this.client.settings.get("default").run();
 
     // For ease of use in commands and functions, we'll attach the settings
     // to the message object, so `message.settings` is accessible.
