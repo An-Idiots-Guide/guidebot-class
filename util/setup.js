@@ -1,5 +1,4 @@
 const inquirer = require("inquirer");
-const Enmap = require("enmap");
 const r = require("rethinkdbdash")({db:"guidebot"});
 const fs = require("fs");
 
