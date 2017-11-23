@@ -1,4 +1,5 @@
 # Guide Bot
+
 An example of a Discord.js Bot Handler. Updated and Maintained by the Idiot's Guide Community.
 
 Ages ago, Guide Bot was actually a little bot I had on the official discord.js server.
@@ -9,12 +10,12 @@ group of contributors, and no longer easily "understandable" by the majority
 of our newbies. So I've pulled the original Guide Bot out of the mothballs,
 gave it a fresh coat of paint and grease, and here it is back in its full glory!
 
-This command handler is 98% compatible with [my selfbot](https://github.com/eslachance/evie.selfbot)
-and 99% compatible with commands from [York's Tutorial Bot](https://github.com/AnIdiotsGuide/Tutorial-Bot/tree/Episode-10-Part-1).
+This command handler is 98% compatible with [Evie's selfbot](https://github.com/eslachance/evie.selfbot)
+and 99% compatible with commands from [York's Tutorial Bot](https://github.com/AnIdiotsGuide/Tutorial-Bot/tree/Episode-10-Part-2).
 
 ## Requirements
 
-- `git` command line ([Windows](https://git-scm.com/download/win)|[Linux](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)|[MacOS](https://git-scm.com/download/mac)) installed
+- `git` command line ([Windows](https://git-scm.com/download/win) | [Linux](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) | [MacOS](https://git-scm.com/download/mac)) installed
 - `node` [Version 8.0.0 or higher](https://nodejs.org)
 - `rethinkdb` [Version 2.3.6 or higher](https://www.rethinkdb.com/)
 
@@ -26,30 +27,14 @@ for more info.
 
 In a command prompt in your projects folder (wherever that may be) run the following:
 
-`git clone https://github.com/An-Idiots-Guide/guidebot.git`
+`git clone https://github.com/An-Idiots-Guide/guidebot-class.git`
 
 Once finished:
 
-- In the folder from where you ran the git command, run `cd discordjs-bot-handler` and then run `npm install`
-- Rename `config.json.example` to `config.json`
-- Edit `config.json` and enter your token and other details as indicated. It should look like this afterwards:
+In the folder from where you ran the git command, run `cd guidebot-class` and then run `npm install`, which will install the required packages,
+and it will then run the installer, make sure you have your token at hand to paste into the console.
 
-```json
-{
-  "ownerID": "139412744439988224",
-  "token": "MzUzOTUxODYwOTA3OTY2NDY0.DI3K3w.VN1Gvsl7CSh2IYIELJDJAFejH4w",
-  "defaultSettings" : {
-    "prefix": "-",
-    "modLogChannel": "mod-log",
-    "modRole": "Moderator",
-    "adminRole": "Administrator",
-    "welcomeEnabled": "false",
-    "welcomeChannel": "welcome",
-    "welcomeMessage": "Say hello to {{user}}, everyone! We all need a warm welcome sometimes :D"
-  }
-}
-```
-> The token in the above example belongs to a deleted bot.
+The installer will create the `config.js` file for you.
 
 ## Setting up the Database
 

@@ -8,15 +8,30 @@ module.exports = class {
     // Why await here? Because the ready event isn't actually ready, sometimes
     // guild information will come in *after* ready. 1s is plenty, generally,
     // for all of them to be loaded.
+    // NOTE: client.wait is added by ./modules/functions.js!
     await this.client.wait(1000);
 
-    // `log` is located in `./index`, whilst `wait` is located in `./modules/functions`
-    this.client.log("log", `${this.client.user.tag}, ready to serve ${this.client.users.size} users in ${this.client.guilds.size} servers.`, "Ready!");
+    // This loop ensures that client.appInfo always contains up to date data
+    // about the app's status. This includes whether the bot is public or not,
+    // its description, owner, etc. Used for the dashboard amongs other things.
+    this.client.appInfo = await this.client.fetchApplication();
+    setInterval( async () => {
+      this.client.appInfo = await this.client.fetchApplication();
+    }, 60000);
 
-    // We check for any guilds added while the bot was offline, if any were, they get a default configuration.
-    const glds = await this.client.settings.run();
-    const gld = await this.client.clean(this.client,glds[0]);
-    console.log(gld);
-    this.client.guilds.filter(g => gld.includes(g.id) ? console.log("Bot ready to rock.") : this.client.settings.insert({id: g.id, settings: this.client.config.defaultSettings}).run());
+    // Check whether the "Default" guild settings are loaded in the enmap.
+    // If they're not, write them in. This should only happen on first load.
+    const def = await this.client.settings.get("default").run();
+    if (def == null) {
+      if (!this.client.config.defaultSettings) throw new Error("defaultSettings not preset in config.js or settings database. Bot cannot load.");
+      this.client.settings.insert({"id":"default", "settings":this.client.config.defaultSettings}).run();
+    }
+
+    // Set the game as the default help command + guild count.
+    // NOTE: This is also set in the guildCreate and guildDelete events!
+    this.client.user.setPresence({game: {name: `${def.prefix}help | ${this.client.guilds.size} Servers`, type:0}});
+  
+    // Log that we're ready to serve, so we know the bot accepts commands.
+    this.client.logger.log(`${this.client.user.tag}, ready to serve ${this.client.users.size} users in ${this.client.guilds.size} servers.`, "ready");
   }
 };
