@@ -47,7 +47,7 @@ let prompts = [
     console.log("Resetting default guild settings...");
     await settings;
     if (settings != null)
-    await r.table("settings").get(id).update({"id":"default", "settings":defaultSettings}).run();
+      await r.table("settings").get("default").update({"id":"default", "settings":defaultSettings}).run();
   }
 
   baseConfig = baseConfig.replace("{{token}}", `"${answers.token}"`);
