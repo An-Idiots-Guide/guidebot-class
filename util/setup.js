@@ -1,10 +1,11 @@
+console.log("WARNING! YOU MUST HAVE RethinkDB RUNNING IN ORDER FOR SETUP TO CONTINUE.");
 const inquirer = require("inquirer");
-const r = require("rethinkdbdash")({db:"guidebot"});
+const r = require("rethinkdbdash")();
 const fs = require("fs");
 
 let baseConfig = fs.readFileSync("./util/setup_base.txt", "utf8");
 
-const defaultSettings = `{
+const defaultSettings = {
   "prefix": "-",
   "modLogChannel": "mod-log",
   "modRole": "Moderator",
@@ -13,9 +14,7 @@ const defaultSettings = `{
   "welcomeChannel": "welcome",
   "welcomeMessage": "Say hello to {{user}}, everyone! We all need a warm welcome sometimes :D",
   "welcomeEnabled": "false"
-}`;
-
-const settings = r.table("settings").get("default").run();
+};
 
 let prompts = [
   {
@@ -33,20 +32,39 @@ let prompts = [
 
 (async function() {
   console.log("Setting Up GuideBot Configuration...");
-  await settings;
+  const list = await r.dbList().run();
+
+  const answer = await inquirer.prompt({
+    type: "list",
+    name: "RethinkDB",
+    message: "Have you created the database and tables?",
+    choices: ["Yes", "No"]
+  });
+
+  if (list.includes("guidebot")) console.log("Skipping database creation. REASON: Already exists.");
+
+  if (answer.RethinkDB  && answer.RethinkDB === "No" && !list.includes("guidebot")) {
+    console.log("Automagically adding database and table.");
+    await r.dbCreate("guidebot").run();
+    await r.db("guidebot").tableCreate("settings");
+  }
+
+  const settings = await r.db("guidebot").table("settings").get("default").run();
   if (settings == null) {
     prompts = prompts.slice(1);
     console.log("First Start! Inserting default guild settings in the database...");
-    await r.table("settings").insert({"id":"default", "settings":defaultSettings}).run();
+    await r.db("guidebot").table("settings").insert({"id":"default", "settings":defaultSettings}).run();
   }
 
   const answers = await inquirer.prompt(prompts);
 
-  if (answers.resetDefaults && answers.resetDefaults === "Yes") {
+  if (answers.resetDefaults && answers.resetDefaults === "Yes" && answer.RethinkDB === "Yes") {
     console.log("Resetting default guild settings...");
-    await settings;
-    if (settings != null)
-      await r.table("settings").get("default").update({"id":"default", "settings":defaultSettings}).run();
+    const settings = await r.db("guidebot").table("settings").get("default").run();
+    if (settings != null) {
+      await r.db("guidebot").table("settings").get("default").delete().run();
+      await r.db("guidebot").table("settings").insert({"id":"default", "settings":defaultSettings}).run();
+    }
   }
 
   baseConfig = baseConfig.replace("{{token}}", `"${answers.token}"`);
@@ -54,5 +72,5 @@ let prompts = [
   fs.writeFileSync("./config.js", baseConfig);
   console.log("REMEMBER TO NEVER SHARE YOUR TOKEN WITH ANYONE!");
   console.log("Configuration has been written, enjoy!");
-  await settings.close();
+  process.exit();
 }());
