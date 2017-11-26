@@ -6,6 +6,7 @@ module.exports = class {
   }
 
   async run(guild) {
+    if (!guild.available) return;
     const def = await this.client.settings.get("default").getField("settings").run();
     this.client.user.setPresence({game: {name: `${def.prefix}help | ${this.client.guilds.size} Servers`, type:0}});
     

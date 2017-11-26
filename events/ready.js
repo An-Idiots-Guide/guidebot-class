@@ -11,6 +11,7 @@ module.exports = class {
     // NOTE: client.wait is added by ./modules/functions.js!
     await this.client.wait(1000);
 
+    const cli = this.client;
     // This loop ensures that client.appInfo always contains up to date data
     // about the app's status. This includes whether the bot is public or not,
     // its description, owner, etc. Used for the dashboard amongs other things.
@@ -23,13 +24,21 @@ module.exports = class {
     // If they're not, write them in. This should only happen on first load.
     const def = await this.client.settings.get("default").run();
     if (def == null) {
-      if (!this.client.config.defaultSettings) throw new Error("defaultSettings not preset in config.js or settings database. Bot cannot load.");
+      this.client.logger.log("Database missing default table, automatically creating one.", "warn");
       this.client.settings.insert({"id":"default", "settings":this.client.config.defaultSettings}).run();
     }
+    
+    // Collect guilds that might've been missed during downtime.
+    this.client.guilds.forEach(async function checking(guild) {
+      const set = await cli.settings.get(guild.id).run();
+      if (set == null) {
+        cli.settings.insert({"id": guild.id, "settings": cli.config.defaultSettings}).run();
+      }
+    });
 
     // Set the game as the default help command + guild count.
     // NOTE: This is also set in the guildCreate and guildDelete events!
-    this.client.user.setPresence({game: {name: `${def.prefix}help | ${this.client.guilds.size} Servers`, type:0}});
+    this.client.user.setPresence({game: {name: `${this.client.config.defaultSettings.prefix}help | ${this.client.guilds.size} Servers`, type:0}});
   
     // Log that we're ready to serve, so we know the bot accepts commands.
     this.client.logger.log(`${this.client.user.tag}, ready to serve ${this.client.users.size} users in ${this.client.guilds.size} servers.`, "ready");
