@@ -1,5 +1,3 @@
-const { inspect } = require("util");
-
 // This command is to modify/edit guild configuration. Perm Level 3 for admins
 // and owners only. Used for changing prefixes and role names and such.
 
@@ -22,29 +20,16 @@ class Set extends Command {
       category: "System",
       usage: "set <view/get/edit> <key> <value>",
       guildOnly: true,
-      aliases: ["setting", "settings", "conf"],
+      aliases: ["setting", "settings"],
       permLevel: "Administrator"
     });
   }
 
   async run(message, [action, key, ...value], level) { // eslint-disable-line no-unused-vars
 
-    // Retrieve current guild settings
-    const settings = await this.client.settings.get(message.guild.id).getField("settings").run();
-  
-    // First, if a user does `-set add <key> <new value>`, let's add it
-    if (action === "add") {
-      if (!key) return message.reply("Please specify a key to add");
-      if (settings[key]) return message.reply("This key already exists in the settings");
-      if (value.length < 1) return message.reply("Please specify a value");
-
-      // `value` being an array, we need to join it first.
-      settings[key] = value.join(" ");
-  
-      // One the settings is modified, we write it back to the collection
-      await this.client.settings.get(message.guild.id).update({"settings":settings}).run();
-      message.reply(`${key} successfully added with the value of ${value.join(" ")}`);
-    } else
+    // First we need to retrieve current guild settings
+    const settings = message.settings;
+    const defaults = await this.client.settings.get("default").getField("settings").run();
   
     // Secondly, if a user does `-set edit <key> <new value>`, let's change it
     if (action === "edit") {
@@ -54,38 +39,47 @@ class Set extends Command {
     
       settings[key] = value.join(" ");
 
-      await this.client.settings.get(message.guild.id).update({"settings":settings}).run();
+      this.client.settings.get(message.guild.id).update({"settings":settings}).run();
       message.reply(`${key} successfully edited to ${value.join(" ")}`);
     } else
   
     // Thirdly, if a user does `-set del <key>`, let's ask the user if they're sure...
-    if (action === "del") {
-      if (!key) return message.reply("Please specify a key to delete.");
+    if (action === "del" || action === "reset") {
+      if (!key) return message.reply("Please specify a key to delete (reset).");
       if (!settings[key]) return message.reply("This key does not exist in the settings");
       
       // Throw the 'are you sure?' text at them.
-      const response = await this.client.awaitReply(message, `Are you sure you want to permanently delete ${key}? This **CANNOT** be undone.`);
+      const response = await this.client.awaitReply(message, `Are you sure you want to reset \`${key}\` to the default \`${defaults[key]}\`?`);
 
       // If they respond with y or yes, continue.
       if (["y", "yes"].includes(response)) {
 
-        // We delete the `key` here.
+        // We reset the `key` here.
         delete settings[key];
-        await this.client.settings.get(message.guild.id).update({"settings":settings}).run();
-        message.reply(`${key} was successfully deleted.`);
+        this.client.settings.get(message.guild.id).update({"settings":settings}).run();
+        message.reply(`${key} was successfully reset to default.`);
       } else
+
       // If they respond with n or no, we inform them that the action has been cancelled.
       if (["n","no","cancel"].includes(response)) {
-        message.reply("Action cancelled.");
+        message.reply(`Your setting for \`${key}\` remains at \`${settings[key]}\``);
       }
     } else
   
+    // Using `-set get <key>` we simply return the current value for the guild.
     if (action === "get") {
       if (!key) return message.reply("Please specify a key to view");
       if (!settings[key]) return message.reply("This key does not exist in the settings");
       message.reply(`The value of ${key} is currently ${settings[key]}`);
+      
     } else {
-      message.channel.send(inspect(settings), {code: "json"});
+      // Otherwise, the default action is to return the whole configuration in JSON format (to be prettified!);
+      const array = [];
+      Object.entries(settings).forEach(([key, value]) => {
+        array.push(`${key}${" ".repeat(20 - key.length)}::  ${value}`); 
+      });
+      await message.channel.send(`= Current Guild Settings =
+${array.join("\n")}`, {code: "asciidoc"});
     }
   }
 }
