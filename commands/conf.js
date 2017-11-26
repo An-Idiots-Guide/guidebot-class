@@ -1,5 +1,3 @@
-const { inspect } = require("util");
-
 /*
 FOR GUILD SETTINGS SEE set.js !
 This command is used to modify the bot's default configuration values, which affects all guilds. 
@@ -26,7 +24,7 @@ class Conf extends Command {
     
   // Retrieve Default Values from the default settings in the bot.
     const defaults = await this.client.settings.get("default").getField("settings").run();
-  
+    const cli = this.client;
     // Adding a new key adds it to every guild (it will be visible to all of them)
     if (action === "add") {
       if (!key) return message.reply("Please specify a key to add");
@@ -39,6 +37,13 @@ class Conf extends Command {
       // One the settings is modified, we write it back to the collection
       await this.client.settings.get("default").update({"settings": defaults}).run();
       message.reply(`${key} successfully added with the value of ${value.join(" ")}`);
+      cli.guilds.forEach(async function run(guild) {
+        const conf = await cli.getSettings(guild.id);
+        if (!conf[key]) {
+          conf[key] = value.join(" ");
+          this.client.settings.get(guild.id).update({"settings":conf}).run();
+        }
+      });
     } else
   
     // Changing the default value of a key only modified it for guilds that did not change it to another value.
@@ -67,17 +72,17 @@ class Conf extends Command {
 
       // We delete the default `key` here.
         delete defaults[key];
-        await this.client.settings.get("default").update({"settings": defaults}).run();
+        await cli.settings.get("default").update({"settings": defaults}).run();
       
         // then we loop on all the guilds and remove this key if it exists.
         // "if it exists" is done with the filter (if the key is present and it's not the default config!)
-        this.client.guilds.forEach(async function run(guild){
-          const conf = await this.client.getSettings(guild.id);
-          if(conf[key]){
-          delete conf[key];
-          this.client.settings.get(guild.id).update({"settings":conf}).run();
+        cli.guilds.forEach(async function run(guild) {
+          const conf = await cli.getSettings(guild.id);
+          if (conf[key]) {
+            delete conf[key];
+            cli.settings.get(guild.id).update({"settings":conf}).run();
           }
-        }})
+        });
       
         message.reply(`${key} was successfully deleted.`);
       } else
