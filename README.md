@@ -23,19 +23,6 @@ You also need your bot's token. This is obtained by creating an application in
 the Developer section of discordapp.com. Check the [first section of this page](https://anidiots.guide/getting-started/the-long-version.html)
 for more info.
 
-## Downloading
-
-In a command prompt in your projects folder (wherever that may be) run the following:
-
-`git clone https://github.com/An-Idiots-Guide/guidebot-class.git`
-
-Once finished:
-
-In the folder from where you ran the git command, run `cd guidebot-class` and then run `npm install`, which will install the required packages,
-and it will then run the installer, make sure you have your token at hand to paste into the console.
-
-The installer will create the `config.js` file for you.
-
 ## Setting up the Database
 
 Once you've installed RethinkDB for your Operating System you will need to create the Database **guidebot** and Table **settings**
@@ -48,17 +35,24 @@ Once you've installed RethinkDB for your Operating System you will need to creat
 - In the database, click **+ Add Table**
 - Set the name as **settings**
 
-> If you do not have access to the Administration Console, use the following code in a Node console to add the tables.
-
-```
-r = require("rethinkdbdash")()
-
-r.dbCreate("guidebot").run()
-
-r.tableCreate("settings").run()
-```
+> If you do not have access to the Administration Console, the installer will do it for you.
 
 Once the following steps are complete, the bot will function as normal.
+
+## Downloading
+
+In a command prompt in your projects folder (wherever that may be) run the following:
+
+`git clone https://github.com/An-Idiots-Guide/guidebot-class.git`
+
+Once finished:
+
+In the folder from where you ran the git command, run `cd guidebot-class` and then run `npm install`, which will install the required packages,
+and it will then run the installer, make sure you have your token at hand to paste into the console.
+
+**WARNING** Have RethinkDB running before you start the installation process.
+
+The installer will create the `config.js` file for you.
 
 ## Starting the bot
 
