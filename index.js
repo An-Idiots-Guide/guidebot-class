@@ -10,7 +10,7 @@ const Discord = require("discord.js");
 const { promisify } = require("util");
 const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
-const r = require("rethinkdbdash")({db:"guidebot"});
+const r = require("rethinkdbdash")({db:"guidebot", silent: true});
 const klaw = require("klaw");
 const path = require("path");
 
@@ -72,7 +72,7 @@ class GuideBot extends Discord.Client {
   loadCommand(commandPath, commandName) {
     try {
       const props = new (require(`${commandPath}${path.sep}${commandName}`))(client);
-      client.logger.log(`Loading Command: ${props.help.name}. 👌`, "log");
+      client.logger.log(`loading ${props.help.name}. 👌`, "log");
       props.conf.location = commandPath;
       if (props.init) {
         props.init(client);
@@ -143,7 +143,6 @@ class GuideBot extends Discord.Client {
 // some might call it `cootchie`. Either way, when you see `client.something`,
 // or `bot.something`, this is what we're refering to. Your client.
 const client = new GuideBot();
-console.log(client.config.permLevels.map(p => `${p.level} : ${p.name}`));
 
 // Let's start by getting some useful functions that we'll use throughout
 // the bot, like logs and elevation features.
