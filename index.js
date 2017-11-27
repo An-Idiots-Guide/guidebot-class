@@ -1,3 +1,4 @@
+
 // This will check if the node version you are running is the required
 // Node version, if it isn't it will throw the following error to inform
 // you.
@@ -9,7 +10,10 @@ const Discord = require("discord.js");
 const { promisify } = require("util");
 const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
-const r = require("rethinkdbdash")({ db: "guidebot" });
+const r = require("rethinkdbdash")({db:"guidebot", silent: true});
+const klaw = require("klaw");
+const path = require("path");
+
 
 class GuideBot extends Discord.Client {
   constructor(options) {
@@ -25,21 +29,22 @@ class GuideBot extends Discord.Client {
     this.commands = new Enmap();
     this.aliases = new Enmap();
 
-    // Set client.settings to select the table. You must have the database "guidebot" AND the table "settings" pre-built.
-    
-    
+    // Now we integrate the use of Evie's awesome Enhanced Map module, which
+    // essentially saves a collection to disk. This is great for per-server configs,
+    // and makes things extremely easy for this purpose.
     this.settings = r.table("settings");
+
+    //requiring the Logger class for easy console logging
+    this.logger = require("./util/Logger");
   }
 
   /*
-    PERMISSION LEVEL FUNCTION
-  
-    This is a very basic permission system for commands which uses "levels"
-    "spaces" are intentionally left black so you can add them if you want.
-    NEVER GIVE ANYONE BUT OWNER THE LEVEL 10! By default this can run any
-    command including the VERY DANGEROUS `eval` command!
-  
-    */
+  PERMISSION LEVEL FUNCTION
+  This is a very basic permission system for commands which uses "levels"
+  "spaces" are intentionally left black so you can add them if you want.
+  NEVER GIVE ANYONE BUT OWNER THE LEVEL 10! By default this can run any
+  command including the VERY DANGEROUS `eval` command!
+  */
   permlevel(message) {
     let permlvl = 0;
 
@@ -56,20 +61,19 @@ class GuideBot extends Discord.Client {
     return permlvl;
   }
 
-  /*
-    LOGGING FUNCTION
+  /* 
+  COMMAND LOAD AND UNLOAD
   
-    Logs to console. Future patches may include time+colors
-    */
-  log(type, msg, title) {
-    if (!title) title = "Log";
-    console.log(`[${type}] [${title}]${msg}`);
-  }
+  To simplify the loading and unloading of commands from multiple locations
+  including the index.js load loop, and the reload function, these 2 ensure
+  that unloading happens in a consistent manner across the board.
+  */
 
-  loadCommand(commandName) {
+  loadCommand(commandPath, commandName) {
     try {
-      const props = new (require(`./commands/${commandName}`))(client);
-      client.log("log", `Loading Command: ${props.help.name}. 👌`);
+      const props = new (require(`${commandPath}${path.sep}${commandName}`))(client);
+      client.logger.log(`loading ${props.help.name}. 👌`, "log");
+      props.conf.location = commandPath;
       if (props.init) {
         props.init(client);
       }
@@ -83,7 +87,7 @@ class GuideBot extends Discord.Client {
     }
   }
 
-  async unloadCommand(commandName) {
+  async unloadCommand(commandPath, commandName) {
     let command;
     if (client.commands.has(commandName)) {
       command = client.commands.get(commandName);
@@ -91,12 +95,47 @@ class GuideBot extends Discord.Client {
       command = client.commands.get(client.aliases.get(commandName));
     }
     if (!command) return `The command \`${commandName}\` doesn"t seem to exist, nor is it an alias. Try again!`;
-  
+
     if (command.shutdown) {
       await command.shutdown(client);
     }
-    delete require.cache[require.resolve(`./commands/${commandName}.js`)];
+    delete require.cache[require.resolve(`${commandPath}${path.sep}${commandName}.js`)];
     return false;
+  }
+
+  /* SETTINGS FUNCTIONS
+  These functions are used by any and all location in the bot that wants to either
+  read the current *complete* guild settings (default + overrides, merged) or that
+  wants to change settings for a specific guild.
+  */
+
+  // getSettings merges the client defaults with the guild settings. guild settings in
+  // enmap should only have *unique* overrides that are different from defaults.
+  async getSettings(id) {
+    const defaults = await client.settings.get("default").getField("settings").run();
+    let guild = await client.settings.get(id).getField("settings").run();
+    if (typeof guild != "object") guild = {};
+    const returnObject = {};
+    Object.keys(defaults).forEach((key) => {
+      returnObject[key] = guild[key] ? guild[key] : defaults[key];
+    });
+    return returnObject;
+  }
+
+  // writeSettings overrides, or adds, any configuration item that is different
+  // than the defaults. This ensures less storage wasted and to detect overrides.
+  async writeSettings(id, newSettings) {
+    const defaults = await client.settings.get("default").getField("settings").run();
+    let settings = await client.settings.get(id).getField("settings").run();
+    if (typeof settings != "object") settings = {};
+    for (const key in newSettings) {
+      if (defaults[key] !== newSettings[key]) {
+        settings[key] = newSettings[key];
+      } else {
+        delete settings[key];
+      }
+    }
+    client.settings.get(id).update({"settings":settings}).run();
   }
 }
 
@@ -104,7 +143,6 @@ class GuideBot extends Discord.Client {
 // some might call it `cootchie`. Either way, when you see `client.something`,
 // or `bot.something`, this is what we're refering to. Your client.
 const client = new GuideBot();
-console.log(client.config.permLevels.map(p=>`${p.level} : ${p.name}`));
 
 // Let's start by getting some useful functions that we'll use throughout
 // the bot, like logs and elevation features.
@@ -117,17 +155,16 @@ const init = async () => {
 
   // Here we load **commands** into memory, as a collection, so they're accessible
   // here and everywhere else.
-  const cmdFiles = await readdir("./commands/");
-  client.log("log", `Loading a total of ${cmdFiles.length} commands.`);
-  cmdFiles.forEach(f => {
-    if (!f.endsWith(".js")) return;
-    const response = client.loadCommand(f);
-    if (response) console.log(response);
+  klaw("./commands").on("data", (item) => {
+    const cmdFile = path.parse(item.path);
+    if (!cmdFile.ext || cmdFile.ext !== ".js") return;
+    const response = client.loadCommand(cmdFile.dir, `${cmdFile.name}${cmdFile.ext}`);
+    if (response) client.logger.error(response);
   });
 
   // Then we load events, which will include our message and ready event.
   const evtFiles = await readdir("./events/");
-  client.log("log", `Loading a total of ${evtFiles.length} events.`);
+  client.logger.log(`Loading a total of ${evtFiles.length} events.`, "log");
   evtFiles.forEach(file => {
     const eventName = file.split(".")[0];
     const event = new (require(`./events/${file}`))(client);
@@ -149,3 +186,8 @@ const init = async () => {
 };
 
 init();
+
+client.on("disconnect", () => client.logger.warn("Bot is disconnecting..."))
+  .on("reconnect", () => client.logger.log("Bot reconnecting...", "log"))
+  .on("error", e => client.logger.error(e))
+  .on("warn", info => client.logger.warn(info));
