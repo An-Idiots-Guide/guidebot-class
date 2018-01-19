@@ -55,4 +55,10 @@ class Help extends Command {
   }
 }
 
+const embed = new Discord.RichEmbed()
+  .setColor(#FFFFFF)
+  .addField("Usage", "", true)
+  .addField("Uses", "", true)
+  .addField("Description", "", true)
+
 module.exports = Help;
