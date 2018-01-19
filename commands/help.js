@@ -40,6 +40,12 @@ class Help extends Command {
           output += `\u200b\n== ${cat} ==\n`;
           currentCategory = cat;
         }
+      const embed = new Discord.RichEmbed()
+       .setColor(#FFFFFF)
+       .addField("Command", ".ban", true)
+       .addField("Category", "General", true)
+       .addField("Description", "Another Random Command.", true)
+      
         output += `${settings.prefix}${c.help.name}${" ".repeat(longest - c.help.name.length)} :: ${c.help.description}\n`;
       });
       message.channel.send(output, {code:"asciidoc", split: { char: "\u200b" }});
@@ -54,11 +60,5 @@ class Help extends Command {
     }
   }
 }
-
-const embed = new Discord.RichEmbed()
-  .setColor(#FFFFFF)
-  .addField("Command", ".ban", true)
-  .addField("Category", "General", true)
-  .addField("Description", "Another Random Command.", true)
 
 module.exports = Help;
