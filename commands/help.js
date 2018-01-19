@@ -40,13 +40,13 @@ class Help extends Command {
           output += `\u200b\n== ${cat} ==\n`;
           currentCategory = cat;
         }
-      const embed = new Discord.RichEmbed()
-       .setColor(#FFFFFF)
-       .addField("Command", `${( )}`, true)
-       .addField("Category", `${(p.help.category)}`, true)
-       .addField("Description", `${( )}`, true)
-      
+     
         output += `${settings.prefix}${c.help.name}${" ".repeat(longest - c.help.name.length)} :: ${c.help.description}\n`;
+        const embed = new Discord.RichEmbed()
+       .setColor(#FFFFFF)
+       .addField("Command", `${settings.prefix}${c.help.name}`, true)
+       .addField("Category", `${c.help.category}`, true)
+       .addField("Description", `${c.help.description}`, true)
       });
       message.channel.send(output, {code:"asciidoc", split: { char: "\u200b" }});
     } else {
