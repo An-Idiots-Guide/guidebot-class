@@ -57,8 +57,8 @@ class Help extends Command {
 
 const embed = new Discord.RichEmbed()
   .setColor(#FFFFFF)
-  .addField("Usage", "", true)
-  .addField("Uses", "", true)
-  .addField("Description", "", true)
+  .addField("Command", ".ban", true)
+  .addField("Category", "General", true)
+  .addField("Description", "Another Random Command.", true)
 
 module.exports = Help;
