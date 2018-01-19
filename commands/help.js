@@ -42,9 +42,9 @@ class Help extends Command {
         }
       const embed = new Discord.RichEmbed()
        .setColor(#FFFFFF)
-       .addField("Command", ".ban", true)
-       .addField("Category", "General", true)
-       .addField("Description", "Another Random Command.", true)
+       .addField("Command", `${( )}`, true)
+       .addField("Category", `${(p.help.category)}`, true)
+       .addField("Description", `${( )}`, true)
       
         output += `${settings.prefix}${c.help.name}${" ".repeat(longest - c.help.name.length)} :: ${c.help.description}\n`;
       });
