@@ -48,7 +48,8 @@ class Help extends Command {
        .addField("Category", `${c.help.category}`, true)
        .addField("Description", `${c.help.description}`, true)
       });
-      message.channel.send(output, {code:"asciidoc", split: { char: "\u200b" }});
+     message.channel.send(embed)
+
     } else {
       // Show individual command's help.
       let command = args[0];
