@@ -157,9 +157,9 @@ const init = async () => {
   // Here we load **commands** into memory, as a collection, so they're accessible
   // here and everywhere else.
   const cmds = await readdir("./commands/");
+
   for (let i = 0; i < cmds.length; i++) {
     if (!cmds[i].endsWith(".js")) return;
-    const cmdName = cmds[i].split(".")[0];
     const response = client.loadCommand("./commands", cmds[i]);
     if (response) client.logger.error(response);
   }
