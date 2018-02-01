@@ -10,7 +10,6 @@ const { promisify } = require("util");
 const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
 const EnmapLevel = require("enmap-level");
-const klaw = require("klaw");
 const path = require("path");
 
 
@@ -157,23 +156,26 @@ const init = async () => {
 
   // Here we load **commands** into memory, as a collection, so they're accessible
   // here and everywhere else.
-  klaw("./commands").on("data", (item) => {
-    const cmdFile = path.parse(item.path);
-    if (!cmdFile.ext || cmdFile.ext !== ".js") return;
-    const response = client.loadCommand(cmdFile.dir, `${cmdFile.name}${cmdFile.ext}`);
+  const cmds = await readdir("./commands/");
+
+  for (let i = 0; i < cmds.length; i++) {
+    if (!cmds[i].endsWith(".js")) return;
+    const response = client.loadCommand("./commands", cmds[i]);
     if (response) client.logger.error(response);
-  });
+  }
 
   // Then we load events, which will include our message and ready event.
   const evtFiles = await readdir("./events/");
   client.logger.log(`Loading a total of ${evtFiles.length} events.`, "log");
-  evtFiles.forEach(file => {
+
+  for (let j = 0; j < evtFiles.length; j++) {
+    const file = evtFiles[j];
     const eventName = file.split(".")[0];
     const event = new (require(`./events/${file}`))(client);
     // This line is awesome by the way. Just sayin'.
     client.on(eventName, (...args) => event.run(...args));
     delete require.cache[require.resolve(`./events/${file}`)];
-  });
+  }
 
   client.levelCache = {};
   for (let i = 0; i < client.config.permLevels.length; i++) {
