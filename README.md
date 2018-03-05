@@ -15,7 +15,7 @@ and 99% compatible with commands from [York's Tutorial Bot](https://github.com/A
 
 ## Requirements
 
-- `git` command line ([Windows](https://git-scm.com/download/win) | [Linux](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) | [MacOS](https://git-scm.com/download/mac)) installed
+- `git` command line ([Windows](https://git-scm.com/download/win) | [Linux](https://git-scm.com/download/linux) | [MacOS](https://git-scm.com/download/mac)) installed
 - `node` [Version 8.0.0 or higher](https://nodejs.org)
 
 You also need your bot's token. This is obtained by creating an application in
