@@ -9,6 +9,7 @@ const config = {
     "domain": {{domain}},
     "port": {{port}}
   },
+  defaultSettings: {{defaultSettings}},
   permLevels: [
     { level: 0,
       name: "User", 

@@ -1,11 +1,10 @@
-const inquirer = require("inquirer");
+const input = require("readline-sync");
 const Enmap = require("enmap");
-const EnmapLevel = require("enmap-level");
 const fs = require("fs");
 
 let baseConfig = fs.readFileSync("./util/setup_base.txt", "utf8");
 
-const defaultSettings = `{
+const defaultSettings = {
   "prefix": "-",
   "modLogChannel": "mod-log",
   "modRole": "Moderator",
@@ -14,51 +13,26 @@ const defaultSettings = `{
   "welcomeChannel": "welcome",
   "welcomeMessage": "Say hello to {{user}}, everyone! We all need a warm welcome sometimes :D",
   "welcomeEnabled": "false"
-}`;
+};
 
-const settings = new Enmap({provider: new EnmapLevel({name: "settings"})});
-
-let prompts = [
-  {
-    type: "list", 
-    name: "resetDefaults", 
-    message: "Do you want to reset default settings?", 
-    choices: ["Yes", "No"]
-  },
-  {
-    type: "input",
-    name: "token",
-    message: "Please enter the bot token from the application page."
-  },
-  {
-    type: "input",
-    name: "oauthSecret",
-    message: "Please enter the Client Secret from the application page."
-  },
-  {
-    type: "input",
-    name: "saltyKey",
-    message: "Please enter a session security passphrase (used to encrypt session data)."
-  },
-  {
-    type: "input",
-    name: "host",
-    message: "Please enter your domain name and port (optional) : (e.g. localhost:8080 or www.example.com)"
-  }
-];
+const settings = new Enmap({name: "settings", cloneLevel: "deep"});
 
 (async function() {
-  console.log("Setting Up GuideBot Configuration...");
+  console.log("Setting Up GuideBot Configuration... CTRL+C if you want to manually edit config.js.example into config.js!");
   await settings.defer;
-  if (!settings.has("default")) {
-    prompts = prompts.slice(1);
+  if (settings.has("default")) {
+    if (input.keyInYN("Default settings already present. Reset to default? ")) {
+      settings.set("default", defaultSettings);
+    }
+  } else {
     console.log("First Start! Inserting default guild settings in the database...");
-    await settings.setAsync("default", defaultSettings);
+    settings.set("default", defaultSettings);
   }
-  const isGlitch = await inquirer.prompt([{type: "confirm", name: "glitch", message: "Are you hosted on Glitch.com?", default: false}]);
-
-  if (isGlitch.glitch) {
+  const isGlitch = input.keyInYN("Are you hosted on Glitch.com? ");
+  
+  if (isGlitch) {
     baseConfig = baseConfig
+      .replace("{{defaultSettings}}", JSON.stringify(defaultSettings, null, 2))
       .replace("{{fullURL}}", "${process.env.PROJECT_DOMAIN}")
       .replace("{{domain}}", "`${process.env.PROJECT_DOMAIN}.glitch.me`")
       .replace("{{port}}", "process.env.PORT")
@@ -66,29 +40,28 @@ let prompts = [
       .replace("{{oauthSecret}}", "process.env.SECRET")
       .replace("{{sessionSecret}}", "process.env.SESSION_SECRET");
     console.log("REMEMBER TO PLACE THE TOKEN, SECRET AND SESSION_SECRET IN YOUR .ENV FILE!!!");
-    const ownerID = await inquirer.prompt([{name: "data", message: "Please enter your User ID for the bot's Owner."}]);
-    baseConfig = baseConfig.replace("{{ownerID}}", ownerID.data);
+    console.log("Details: https://anidiots.guide/other-guides/hosting-on-glitch")
     fs.writeFileSync("./config.js", baseConfig);
     console.log("Configuration has been written, enjoy!");
     return;
   }
 
-  const answers = await inquirer.prompt(prompts);
-
-  if (answers.resetDefaults && answers.resetDefaults === "Yes") {
-    console.log("Resetting default guild settings...");
-    await settings.setAsync("default", defaultSettings);
-  }
-
-  const port = answers.host.split(":")[1] || "81";
+  const token = input.question("Enter the bot token from the application page: ");
+  const oauthSecret = input.question("Enter the Client Secret from the application page: ");
+  const saltyKey = input.question("Enter a session security passphrase (used to encrypt session data): ");
+  const host = input.question("Please enter your domain name (no http prefix, port optional, e.g. localhost:8080 or www.example.com): ");
+  const port = input.question("Enter the port on which to start the local server (default 81): ", {
+    defaultInput: 81
+  });
 
   baseConfig = baseConfig
-    .replace("{{fullURL}}", answers.host)
-    .replace("{{domain}}", `"${answers.host.split(":")[0]}"`)
+    .replace("{{defaultSettings}}", JSON.stringify(defaultSettings, null, 2))
+    .replace("{{fullURL}}", host)
+    .replace("{{domain}}", `"${host.split(":")[0]}"`)
     .replace("{{port}}", port)
-    .replace("{{token}}", `"${answers.token}"`)
-    .replace("{{oauthSecret}}", `"${answers.oauthSecret}"`)
-    .replace("{{sessionSecret}}", `"${answers.saltyKey}"`);
+    .replace("{{token}}", `"${token}"`)
+    .replace("{{oauthSecret}}", `"${oauthSecret}"`)
+    .replace("{{sessionSecret}}", `"${saltyKey}"`);
   
   fs.writeFileSync("./config.js", baseConfig);
   console.log("REMEMBER TO NEVER SHARE YOUR TOKEN WITH ANYONE!");
