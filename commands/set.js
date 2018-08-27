@@ -40,16 +40,17 @@ class Set extends Command {
       // User must specify a key that actually exists!
       if (!settings[key]) return message.reply("This key does not exist in the settings");
       // User must specify a value to change.
-      if (value.length < 1) return message.reply("Please specify a new value");
+      const joinedValue = value.join(" ");
+      if (joinedValue.length < 1) return message.reply("Please specify a new value");
       // User must specify a different value than the current one.
-      if (value.join(" ") === settings[key]) return message.reply("This setting already has that value!");
+      if (joinedValue === settings[key]) return message.reply("This setting already has that value!");
 
       // If the guild does not have any overrides, initialize it.
       if (!this.client.settings.has(message.guild.id)) this.client.settings.set(message.guild.id, {});
 
       // Modify the guild overrides directly.
-      this.client.settings.set(message.guild.id, value.join(" "), key);
-      message.reply(`${key} successfully edited to ${value.join(" ")}`);
+      this.client.settings.set(message.guild.id, joinedValue, key);
+      message.reply(`${key} successfully edited to ${joinedValue}`);
     } else
   
     // If a user does `-set del <key>`, let's ask the user if they're sure...

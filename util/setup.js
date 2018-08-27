@@ -29,7 +29,7 @@ const settings = new Enmap({name: "settings", cloneLevel: "deep"});
     settings.set("default", defaultSettings);
   }
   const isGlitch = input.keyInYN("Are you hosted on Glitch.com? ");
-  
+
   if (isGlitch) {
     baseConfig = baseConfig
       .replace("{{defaultSettings}}", JSON.stringify(defaultSettings, null, 2))

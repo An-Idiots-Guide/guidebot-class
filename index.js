@@ -33,6 +33,9 @@ class GuideBot extends Discord.Client {
 
     //requiring the Logger class for easy console logging
     this.logger = require("./util/Logger");
+
+    // Basically just an async shortcut to using a setTimeout. Nothing fancy!
+    this.wait = promisify(setTimeout);
   }
 
   /*
@@ -144,7 +147,7 @@ class GuideBot extends Discord.Client {
   and stringifies objects!
   This is mostly only used by the Eval and Exec commands.
   */
-  async clean (client, text) {
+  async clean(text) {
     if (text && text.constructor.name == "Promise")
       text = await text;
     if (typeof evaled !== "string")
@@ -153,7 +156,7 @@ class GuideBot extends Discord.Client {
     text = text
       .replace(/`/g, "`" + String.fromCharCode(8203))
       .replace(/@/g, "@" + String.fromCharCode(8203))
-      .replace(client.token, "mfa.VkO_2G4Qv3T--NO--lWetW_tjND--TOKEN--QFTm6YGtzq9PH--4U--tG0");
+      .replace(this.token, "mfa.VkO_2G4Qv3T--NO--lWetW_tjND--TOKEN--QFTm6YGtzq9PH--4U--tG0");
 
     return text;
   }
@@ -179,14 +182,6 @@ class GuideBot extends Discord.Client {
       return false;
     }
   };
-
-  /* 
-  WAIT FUNCTION
-  Basically just an async shortcut to using a setTimeout. Nothing fancy!
-  */
-  wait() {
-    return promisify(setTimeout);
-  }
 }
 
 // This is your client. Some people call it `bot`, some people call it `self`,
