@@ -9,7 +9,6 @@ const { Client, Collection } = require("discord.js");
 const { promisify } = require("util");
 const readdir = promisify(require("fs").readdir);
 const Enmap = require("enmap");
-const EnampSQLite = require("enmap-sqlite");
 const klaw = require("klaw");
 const path = require("path");
 
@@ -31,10 +30,13 @@ class GuideBot extends Client {
     // Now we integrate the use of Evie's awesome Enhanced Map module, which
     // essentially saves a collection to disk. This is great for per-server configs,
     // and makes things extremely easy for this purpose.
-    this.settings = new Enmap({ provider: new EnampSQLite({ name: "settings" }) });
+    this.settings = new Enmap({ name: "settings", cloneLevel: "deep", fetchAll: false, autoFetch: true });
 
     //requiring the Logger class for easy console logging
     this.logger = require("./modules/Logger");
+
+    // Basically just an async shortcut to using a setTimeout. Nothing fancy!
+    client.wait = require("util").promisify(setTimeout);
   }
 
   /*
@@ -112,13 +114,12 @@ class GuideBot extends Client {
 
   // getSettings merges the client defaults with the guild settings. guild settings in
   // enmap should only have *unique* overrides that are different from defaults.
-  getSettings (id) {
-    const defaults = this.settings.get("default");
-    let guild = this.settings.get(id);
-    if (typeof guild != "object") guild = {};
+  getSettings (guild) {
+    const defaults = this.config.defaultSettings || {};
+    const guildData = this.settings.get(guild.id) || {};
     const returnObject = {};
     Object.keys(defaults).forEach((key) => {
-      returnObject[key] = guild[key] ? guild[key] : defaults[key];
+      returnObject[key] = guildData[key] ? guildData[key] : defaults[key];
     });
     return returnObject;
   }
@@ -138,6 +139,25 @@ class GuideBot extends Client {
     }
     this.settings.set(id, settings);
   }
+
+  /*
+  SINGLE-LINE AWAITMESSAGE
+  A simple way to grab a single reply, from the user that initiated
+  the command. Useful to get "precisions" on certain things...
+  USAGE
+  const response = await client.awaitReply(msg, "Favourite Color?");
+  msg.reply(`Oh, I really love ${response} too!`);
+  */
+  async awaitReply (msg, question, limit = 60000) {
+    const filter = m=>m.author.id = msg.author.id;
+    await msg.channel.send(question);
+    try {
+      const collected = await msg.channel.awaitMessages(filter, { max: 1, time: limit, errors: ["time"] });
+      return collected.first().content;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 // This is your client. Some people call it `bot`, some people call it `self`,
@@ -145,10 +165,6 @@ class GuideBot extends Client {
 // or `bot.something`, this is what we're refering to. Your client.
 const client = new GuideBot();
 console.log(client.config.permLevels.map(p => `${p.level} : ${p.name}`));
-
-// Let's start by getting some useful functions that we'll use throughout
-// the bot, like logs and elevation features.
-require("./modules/functions.js")(client);
 
 // We're doing real fancy node 8 async/await stuff here, and to do that
 // we need to wrap stuff in an anonymous function. It's annoying but it works.
@@ -194,3 +210,34 @@ client.on("disconnect", () => client.logger.warn("Bot is disconnecting..."))
   .on("reconnecting", () => client.logger.log("Bot reconnecting...", "log"))
   .on("error", e => client.logger.error(e))
   .on("warn", info => client.logger.warn(info));
+
+/* MISCELANEOUS NON-CRITICAL FUNCTIONS */
+
+// EXTENDING NATIVE TYPES IS BAD PRACTICE. Why? Because if JavaScript adds this
+// later, this conflicts with native code. Also, if some other lib you use does
+// this, a conflict also occurs. KNOWING THIS however, the following methods
+// are, we feel, very useful in code. 
+
+// <String>.toPropercase() returns a proper-cased string such as: 
+// "Mary had a little lamb".toProperCase() returns "Mary Had A Little Lamb"
+String.prototype.toProperCase = function () {
+  return this.replace(/([^\W_]+[^\s-]*) */g, function (txt) {return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+};
+// <Array>.random() returns a single random element from an array
+// [1, 2, 3, 4, 5].random() can return 1, 2, 3, 4 or 5.
+Array.prototype.random = function () {
+  return this[Math.floor(Math.random() * this.length)];
+};
+
+// These 2 process methods will catch exceptions and give *more details* about the error and stack trace.
+process.on("uncaughtException", (err) => {
+  const errorMsg = err.stack.replace(new RegExp(`${__dirname}/`, "g"), "./");
+  console.error("Uncaught Exception: ", errorMsg);
+  // Always best practice to let the code crash on uncaught exceptions. 
+  // Because you should be catching them anyway.
+  process.exit(1);
+});
+
+process.on("unhandledRejection", err => {
+  console.error("Uncaught Promise Error: ", err);
+});
