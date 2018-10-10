@@ -1,11 +1,10 @@
-const inquirer = require("inquirer");
+const input = require("readline-sync");
 const Enmap = require("enmap");
-const EnampSQLite = require("enmap-sqlite");
 const fs = require("fs");
 
 let baseConfig = fs.readFileSync("./util/setup_base.txt", "utf8");
 
-const defaultSettings = `{
+const defaultSettings = {
   "prefix": "-",
   "modLogChannel": "mod-log",
   "modRole": "Moderator",
@@ -14,44 +13,30 @@ const defaultSettings = `{
   "welcomeChannel": "welcome",
   "welcomeMessage": "Say hello to {{user}}, everyone! We all need a warm welcome sometimes :D",
   "welcomeEnabled": "false"
-}`;
+};
 
-const settings = new Enmap({ provider: new EnampSQLite({ name: "settings" }) });
+const settings = new Enmap({name: "settings", cloneLevel: "deep"});
 
-let prompts = [
-  {
-    type: "list", 
-    name: "resetDefaults", 
-    message: "Do you want to reset default settings?", 
-    choices: ["Yes", "No"]
-  },
-  {
-    type: "input",
-    name: "token",
-    message: "Please enter the bot token from the application page."
-  }
-];
-
-(async function () {
-  console.log("Setting Up GuideBot Configuration...");
+(async function() {
+  console.log("Setting Up GuideBot Configuration... CTRL+C if you want to manually edit config.js.example into config.js!");
   await settings.defer;
-  if (!settings.has("default")) {
-    prompts = prompts.slice(1);
+  if (settings.has("default")) {
+    if (input.keyInYN("Default settings already present. Reset to default? ")) {
+      settings.set("default", defaultSettings);
+    }
+  } else {
     console.log("First Start! Inserting default guild settings in the database...");
-    await settings.set("default", defaultSettings);
+    settings.set("default", defaultSettings);
   }
 
-  const answers = await inquirer.prompt(prompts);
+  const token = input.question("Enter the bot token from the application page: ");
 
-  if (answers.resetDefaults && answers.resetDefaults === "Yes") {
-    console.log("Resetting default guild settings...");
-    await settings.set("default", defaultSettings);
-  }
-
-  baseConfig = baseConfig.replace("{{token}}", `"${answers.token}"`);
+  baseConfig = baseConfig
+    .replace("{{defaultSettings}}", JSON.stringify(defaultSettings, null, 2))
+    .replace("{{token}}", `"${token}"`)
   
   fs.writeFileSync("./config.js", baseConfig);
   console.log("REMEMBER TO NEVER SHARE YOUR TOKEN WITH ANYONE!");
   console.log("Configuration has been written, enjoy!");
-  await settings.db.close();
+  await settings.close();
 }());
