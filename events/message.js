@@ -16,9 +16,9 @@ module.exports = class {
     // Cancel any attempt to execute commands if the bot cannot respond to the user.
     if (!message.channel.permissionsFor(message.guild.me).missing("SEND_MESSAGES")) return;
     
-    // Grab the settings for this server from the PersistentCollection
+    // Grab the settings for this server from the Enmap
     // If there is no guild, get default conf (DMs)
-    const settings = message.guild ? this.client.getSettings(message.guild.id) : this.client.settings.get("default");
+    const settings = this.client.getSettings(message.guild);
 
     // For ease of use in commands and functions, we'll attach the settings
     // to the message object, so `message.settings` is accessible.
