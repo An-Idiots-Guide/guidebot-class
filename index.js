@@ -36,7 +36,7 @@ class GuideBot extends Client {
     this.logger = require("./modules/Logger");
 
     // Basically just an async shortcut to using a setTimeout. Nothing fancy!
-    client.wait = require("util").promisify(setTimeout);
+    this.wait = require("util").promisify(setTimeout);
   }
 
   /*
