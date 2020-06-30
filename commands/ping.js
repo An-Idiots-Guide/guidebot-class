@@ -1,7 +1,7 @@
 const Command = require("../base/Command.js");
 
 class Ping extends Command {
-  constructor (client) {
+  constructor(client) {
     super(client, {
       name: "ping",
       description: "Latency and API response times.",
@@ -10,10 +10,10 @@ class Ping extends Command {
     });
   }
 
-  async run (message, args, level) { // eslint-disable-line no-unused-vars
+  async run(message, args, level) { // eslint-disable-line no-unused-vars
     try {
-      const msg = await message.channel.send("🏓 Ping!");
-      msg.edit(`🏓 Pong! (Roundtrip took: ${msg.createdTimestamp - message.createdTimestamp}ms. 💙: ${Math.round(this.client.ping)}ms.)`);
+      const msg = await message.channel.send("being appreciated...");
+      msg.edit(`Round Trip & Response: \`${Date.now() - message.createdTimestamp}\` Millisecond's.\nDiscord Application Programming Interface: \`${Math.round(client.ws.ping)}\` Millisecond's)`);
     } catch (e) {
       console.log(e);
     }
