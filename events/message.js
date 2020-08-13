@@ -14,7 +14,7 @@ module.exports = class {
     if (message.author.bot) return;
 
     // Cancel any attempt to execute commands if the bot cannot respond to the user.
-    if (message.guild && !message.channel.permissionsFor(message.guild.me).missing("SEND_MESSAGES")) return;
+    if (message.guild && !message.guild.me.permissions.has('SEND_MESSAGES')) return;
     
     // Grab the settings for this server from the Enmap
     // If there is no guild, get default conf (DMs)
