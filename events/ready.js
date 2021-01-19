@@ -1,3 +1,5 @@
+const { Team } = require("discord.js");
+
 module.exports = class {
   constructor (client) {
     this.client = client;
@@ -15,6 +17,13 @@ module.exports = class {
     // about the app's status. This includes whether the bot is public or not,
     // its description, owner, etc. Used for the dashboard amongs other things.
     this.client.appInfo = await this.client.fetchApplication();
+    if (this.client.owners.length < 1) {
+      if (this.client.appInfo.owner instanceof Team) {
+        this.client.owners.push(...this.client.appInfo.owner.members.keys());
+      } else {
+        this.client.owners.push(this.client.appInfo.owner.id);
+      }
+    }
     setInterval( async () => {
       this.client.appInfo = await this.client.fetchApplication();
     }, 60000);
