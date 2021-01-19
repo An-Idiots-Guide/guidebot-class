@@ -27,6 +27,8 @@ class GuideBot extends Client {
     // catalogued, listed, etc.
     this.commands = new Collection();
     this.aliases = new Collection();
+    
+    this.owners = new Array();
 
     // Now we integrate the use of Evie's awesome Enhanced Map module, which
     // essentially saves a collection to disk. This is great for per-server configs,
