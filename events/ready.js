@@ -10,7 +10,7 @@ module.exports = class {
     // Why await here? Because the ready event isn't actually ready, sometimes
     // guild information will come in *after* ready. 1s is plenty, generally,
     // for all of them to be loaded.
-    // NOTE: client.wait is added by ./modules/functions.js!
+    // NOTE: client.wait is added when we create the Guidebot class in ../index.js!
     await this.client.wait(1000);
 
     // This loop ensures that client.appInfo always contains up to date data
