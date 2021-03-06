@@ -15,7 +15,7 @@ module.exports = class {
 
     // This loop ensures that client.appInfo always contains up to date data
     // about the app's status. This includes whether the bot is public or not,
-    // its description, owner, etc. Used for the dashboard amongs other things.
+    // its description, owner, etc. Used for the dashboard amongst other things.
     this.client.appInfo = await this.client.fetchApplication();
     if (this.client.owners.length < 1) {
       if (this.client.appInfo.owner instanceof Team) {
